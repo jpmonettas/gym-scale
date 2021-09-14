@@ -1,0 +1,75 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text Label 1710 2490 2    50   ~ 0
+TopLeftRed
+Text Label 1710 2370 2    50   ~ 0
+TopLeftBlack
+Text Label 1710 2600 2    50   ~ 0
+TopLeftWhite
+Text Label 1700 2040 2    50   ~ 0
+TopRightRed
+Text Label 1700 2140 2    50   ~ 0
+TopRightBlack
+Text Label 1700 1940 2    50   ~ 0
+TopRightWhite
+Text Label 1700 1780 2    50   ~ 0
+BottomRightRed
+Text Label 1700 1570 2    50   ~ 0
+BottomRightBlack
+Text Label 1700 1680 2    50   ~ 0
+BottomRightWhite
+Text Label 1700 1190 2    50   ~ 0
+BottomLeftRed
+Text Label 1700 1410 2    50   ~ 0
+BottomLeftBlack
+Text Label 1700 1300 2    50   ~ 0
+BottomLeftWhite
+Wire Wire Line
+	1710 2370 1780 2370
+Wire Wire Line
+	1780 2370 1780 2140
+Wire Wire Line
+	1780 2140 1700 2140
+Wire Wire Line
+	1700 1570 1780 1570
+Wire Wire Line
+	1780 1570 1780 1410
+Wire Wire Line
+	1780 1410 1700 1410
+Wire Wire Line
+	1700 2040 1840 2040
+Wire Wire Line
+	1840 2040 1840 1190
+Wire Wire Line
+	1840 1190 1700 1190
+Wire Wire Line
+	1710 2490 1870 2490
+Wire Wire Line
+	1870 2490 1870 1780
+Wire Wire Line
+	1870 1780 1700 1780
+$Comp
+L custom:HX711 HX?
+U 1 1 613B648A
+P 3400 2100
+F 0 "HX?" H 3400 2665 50  0000 C CNN
+F 1 "HX711" H 3400 2574 50  0000 C CNN
+F 2 "" H 3400 2100 50  0001 C CNN
+F 3 "" H 3400 2100 50  0001 C CNN
+	1    3400 2100
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
