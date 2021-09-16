@@ -35,16 +35,23 @@
  :serial/on-message
  (fn [db [_ s]]
    (let [[_ command args-str :as all] (re-find #"([A-Z]+) (.*)" s)
-         db' (case command
-               "STATUS" (assoc db :scale/status (case args-str
-                                                  "UNCALIBRATED" :uncalibrated
-                                                  "READY"        :ready))
+         db' (case command               
                "WEIGHT" (assoc db :scale/last-weight (js/parseFloat args-str))
                (do
                  (js/console.log "Couldn't parse command from " s)
                  db))]
      (cond-> db'
        debug-enable (update :debug-console #(conj % s))))))
+
+(reg-event-db
+ :serial/connected
+ (fn [db _]
+   (assoc db :serial/connected? true)))
+
+(reg-event-db
+ :serial/disconnected
+ (fn [db [_ _]]
+   (assoc db :serial/connected? false)))
 
 ;;;;;;;;;
 ;; FXs ;;
@@ -60,6 +67,14 @@
                    (fn [serial-msg]
                      (js/console.log ">>>" serial-msg)
                      (dispatch [:serial/on-message (.-data serial-msg)])))
+     (.addListener event-emitter "onSerialConnect"
+                   (fn [_]
+                     (js/console.log "Serial connected")
+                     (dispatch [:serial/connected])))
+     (.addListener event-emitter "onSerialDisconnect"
+                   (fn [error-msg]
+                     (js/console.log "Serial disconnected" error-msg)
+                     (dispatch [:serial/disconnected error-msg])))
      (js/console.log "Opening connection")
      (.openConnection OTGModule))))
 

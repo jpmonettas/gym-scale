@@ -24,6 +24,20 @@ import com.facebook.react.bridge.Arguments;
 
 import com.facebook.react.bridge.Callback;
 
+/*
+Module to handle OTGSerial connection, it can :
+	
+	- openConnection
+	- closeConnection
+	- sendString
+
+generate events :
+		
+	- onSerialConnect
+	- onSerialDisconnect
+	- onSerialData
+*/
+
 public class OTGModule extends ReactContextBaseJavaModule implements SerialInputOutputManager.Listener {
 	private UsbSerialPort port = null;    
 	ReactApplicationContext reactAppContext = null;
@@ -73,7 +87,9 @@ public class OTGModule extends ReactContextBaseJavaModule implements SerialInput
 
 			SerialInputOutputManager usbIoManager = new SerialInputOutputManager(port, this);
 			usbIoManager.start();
-            
+
+			WritableMap params = Arguments.createMap();
+			sendEvent(reactAppContext, "onSerialConnect", params);
 		}catch (Exception e){
 			Log.e("OTGModule","Something went wrong inside openConnection", e);			
 		}		
@@ -113,7 +129,10 @@ public class OTGModule extends ReactContextBaseJavaModule implements SerialInput
 
 	@Override
 	public void onRunError(Exception e) {
-        Log.e("OTGModule","Error reported thru onRunError", e);			
+        Log.e("OTGModule","Error reported thru onRunError", e);
+		WritableMap params = Arguments.createMap();
+		params.putString("message", e.getMessage());
+		sendEvent(reactAppContext, "onSerialDisconnect", params);
 	}
 	
 }

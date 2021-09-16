@@ -11,3 +11,8 @@
  (fn [db _]
    (:scale/status db)))
 
+(reg-sub
+ :serial/connected?
+ (fn [db _]
+   (:serial/connected? db)))
+

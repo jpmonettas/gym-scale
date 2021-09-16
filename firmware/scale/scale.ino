@@ -6,7 +6,7 @@
 enum scale_status {UNCALIBRATED=0, READY=1};
 
 long  _offset   = 8779950; // use tare() to find this value
-float _scale    = -0.05; // use calibrate_scale(weight) to find this value
+float _scale    = -0.04536540; // use calibrate_scale(weight) to find this value
 
 int status = UNCALIBRATED;
 
@@ -44,6 +44,9 @@ float get_scaled()
 
 void tare(){
   _offset = read();
+  
+  status=READY;
+  send_status();
 }
 
 void calibrate_scale(int weight) // in grams
@@ -52,6 +55,7 @@ void calibrate_scale(int weight) // in grams
   _scale = (1.0 * weight) / (avg - _offset);
   status=READY;
   send_status();
+  Serial.print("_scale :"); Serial.println(_scale, 8);
 }
 
 void setup()
@@ -64,6 +68,7 @@ void setup()
   pinMode(clockPin, OUTPUT);
   digitalWrite(clockPin, LOW);
 
+  tare();
 }
 
 void read_and_execute_command(){

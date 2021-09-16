@@ -2,5 +2,4 @@
 
 (def initial-db
   {:scale/last-weight 0
-   :scale/status :unknown ;; :unknown, :uncalibrated, :ready
-   })
+   :serial/connected? false})
