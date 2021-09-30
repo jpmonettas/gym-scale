@@ -1,8 +1,9 @@
 (ns gym-scale.events
   (:require [re-frame.core :refer [reg-event-db reg-event-fx reg-fx dispatch]]
-            [react-native :refer [NativeModules NativeEventEmitter] :as react-native]
+            [react-native :refer [PermissionsAndroid NativeModules NativeEventEmitter] :as react-native]
             [gym-scale.db :as db]
-            [react-native-sqlite-storage :as SQLite]))
+            [react-native-sqlite-storage :as SQLite]
+            [react-native-ble-manager :as BleManager]))
 
 (reg-event-fx
  :app/init
@@ -17,7 +18,7 @@
 (reg-event-fx
  :scale/open-connection
  (fn [cofxs _]
-   {:serial/open-connection nil}))
+   {:ble/start nil}))
 
 (reg-event-fx
  :scale/close-connection
@@ -33,6 +34,11 @@
  :scale/calibrate
  (fn [cofxs [_ grams]]
    {:serial/send-string (str "CALI " grams "\n")}))
+
+(reg-event-db
+ :scale/on-weight-change
+ (fn [db [_ w]]
+   (assoc db :scale/last-weight w)))
 
 (def debug-enable false)
  
@@ -88,6 +94,9 @@
 ;; FXs ;;
 ;;;;;;;;;
 
+;; OTG serial connection
+;; ---------------------
+
 (def OTGModule (.-OTGModule NativeModules))
 
 (reg-fx
@@ -119,6 +128,9 @@
  (fn [s]
    (js/console.log "Sending string :" s)
    (.sendString OTGModule s)))
+
+;; SQLite
+;; ------
 
 (def db* (atom nil))
 
@@ -195,7 +207,6 @@
                                         (dispatch (into [succ-ev-key rows-vec] succ-ev-args))))
                                     (fn error [err] (js/console.err "Error executing query")))
                        (catch js/Object e (js/console.error "ERROR :sqlite/execute-sql" e))))))))
- 
 
 (comment
 
@@ -203,4 +214,126 @@
   (.transaction @db* populate-with-dummy-data #() #())
 
   (dispatch [:db/load-all-users])
+  )
+
+;; Bluetooth LE
+;; ------------
+
+
+(def BleManagerModule (.-BleManager NativeModules))
+(def bleManagerEmitter (NativeEventEmitter. BleManagerModule))
+(def weight-scale-service-id  "181d")
+(def weight-characteristic-id "2a98")
+
+
+(defn scan-ble-devices []
+  (-> (.scan BleManager             
+             #js [weight-scale-service-id] ;; services ids we are interested in
+             120                           ;; the amount of seconds to scan
+             true                          ;; allow duplicates
+             #js {}                        ;; options
+             )
+      (.then (fn []
+               (js/console.log "BLE scan started")))
+      (.catch (fn [err]
+                (js/console.error "[scan-ble-devices]" err)))))
+
+(defn retrieve-service-and-start-notification [peripheral-id]
+  (-> (.retrieveServices BleManager peripheral-id)
+      (.then (fn [peripheral-info]               
+               (js/console.log peripheral-info)
+               (js/setTimeout
+                (fn []
+                  (-> (.startNotification BleManager
+                                          peripheral-id
+                                          weight-scale-service-id
+                                          weight-characteristic-id)
+                      (.then (fn []
+                               (js/console.log (str "Started notification for " weight-scale-service-id " " weight-characteristic-id))))
+                      (.catch (fn [err]
+                                (js/console.error "[retrieve-service-and-start-notification]" err)))))
+                500)))
+      (.catch (fn [err]
+                (js/console.error "[retrieve-service-and-start-notification]" err)))))
+
+(defn handle-discover-peripheral [peripheral]
+  (js/console.log (str "handle-discover-peripheral" (.-name peripheral)))
+  
+  (when (= (.-name peripheral) "ESP32")
+    (js/console.log peripheral)  
+    (if (not (.-connected peripheral))
+      ;; if it is not connected connect
+      (-> (.connect BleManager (.-id peripheral))
+          (.then (fn []
+                   (js/console.log "Connected to " (.-id peripheral))
+                   (retrieve-service-and-start-notification (.-id peripheral))))
+          (.catch (fn [err]
+                    (js/console.error "[handle-discover-peripheral]" err))))
+
+      ;; else if it is already connected proceed 
+      (retrieve-service-and-start-notification (.-id peripheral)))))
+
+(defn handle-stop-scan []
+  (js/console.log "handle-stop-scan"))
+
+(defn handle-disconnect-peripheral [data]  
+  (let [peripheral (.-peripheral data)]
+    (js/console.log "[handle-disconnect-peripheral] Peripheral disconnected" (.-id peripheral))))
+
+(defn handle-update-value-for-characteristic [data]
+  (let [[a b :as d] (js->clj (.-value data))
+        w (* (+ (bit-shift-left b 8) a) 5)]
+    (dispatch [:scale/on-weight-change w])))
+
+(defn handle-foo [data]
+  (js/console.log ">>>>>>>>>>>>>>>>>>" data))
+
+(defn start []
+  
+  (.addListener bleManagerEmitter "BleManagerDiscoverPeripheral" handle-discover-peripheral)
+  (.addListener bleManagerEmitter "BleManagerStopScan" handle-stop-scan)
+  (.addListener bleManagerEmitter "BleManagerDisconnectPeripheral" handle-disconnect-peripheral)
+  (.addListener bleManagerEmitter "BleManagerDidUpdateValueForCharacteristic" handle-update-value-for-characteristic)
+
+  (.addListener bleManagerEmitter "BleManagerDidUpdateState" handle-foo)
+  (.addListener bleManagerEmitter "BleManagerPeripherialDidBond" handle-foo)    
+  
+  (-> (.start BleManager #js{:showAlert false})
+      (.then (fn []
+               (js/console.log "BLE module initialized")
+               (scan-ble-devices)))
+      (.catch (fn [err]
+                (js/console.error "[STARTING]" err)))))
+
+(reg-fx
+ :ble/start
+ (fn [_]
+   (-> (.check PermissionsAndroid "android.permission.ACCESS_FINE_LOCATION")
+       (.then (fn [has-permission?]
+                (if has-permission?
+                  (do
+                    (js/console.log "Permissions ok, starting...")
+                    (start))
+                  (do
+                    (js/console.log "Not enough permissions")
+                    (-> (.request PermissionsAndroid "android.permission.ACCESS_FINE_LOCATION")
+                        (.then (fn [granted?]
+                                 (if granted?
+                                   (do
+                                     (js/console.log "Permissions granted, starting...")
+                                     (start))
+                                   (js/console.log "Permissions rejected"))))))))))))
+
+(comment
+
+  (in-ns 'gym-scale.events)
+
+  
+
+  
+
+  
+  
+  
+
   )
