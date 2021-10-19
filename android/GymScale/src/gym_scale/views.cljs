@@ -1,4 +1,4 @@
-(ns gym-scale.views  
+(ns gym-scale.views
   (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.react-native :as rn]
             [reagent.core :as r]))
@@ -7,10 +7,10 @@
   (let [calib-grams (r/atom "")]
     (fn []
       (let [last-weight @(subscribe [:scale/last-weight])
-            serial-connected? @(subscribe [:serial/connected?])]
+            scale-connected? @(subscribe [:scale/connected?])]
         [rn/view {:flex 1}
          [rn/view {:flex 1}
-          (if serial-connected?
+          (if scale-connected?
             [rn/text {} "Connected"]
             [rn/button {:on-press (fn [] (dispatch [:scale/open-connection]))
                         :title "Connect"}])]
