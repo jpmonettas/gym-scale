@@ -31,7 +31,7 @@
 
 (defn screen-user-select-1 []
   (let [alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        users-initials @(subscribe [:gym/users-initials])]
+        users-initials @(subscribe [:gym/users-search-initials])]
     [rn/view {:height "100%"
               :justify-content :center
               :align-items :center}
@@ -41,7 +41,8 @@
       (for [symb alphabet]
         (let [symb-enabled? (contains? users-initials symb)]
          ^{:key symb}
-          [rn/touchable-highlight {:on-press (fn [] (println "Touched" symb))
+          [rn/touchable-highlight {:on-press (fn []
+                                               (dispatch [:screen/switch-to-user-select-2 symb]))
                                    :disabled (not symb-enabled?)}
           [rn/view {:border-width 1
                     :border-color :black
@@ -52,8 +53,9 @@
                              :font-family "monospace"}} symb]]]))]]))
 
 (defn screen-user-select-2 []
-  [rn/view {}
-   [rn/text {} "screen-user-select-2"]])
+  (let [users @(subscribe [:gym/users-search])]
+    [rn/view {}
+     [rn/text {} (str users)]]))
 
 (defn screen-user-check []
   [rn/view {}

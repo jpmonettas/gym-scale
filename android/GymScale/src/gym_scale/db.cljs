@@ -12,18 +12,18 @@
 (s/def :gym/user-data (s/keys :req [:user/id
                                     :user/name]))
 
-(s/def :gym/users (s/map-of :user/id :gym/user-data))
+(s/def :gym/users-search (s/map-of :user/id :gym/user-data))
 
 (s/def ::db (s/keys :req [:scale/last-weight
                           :scale/connected?
-                          :gym/users]))
+                          :gym/users-search]))
 
 (def initial-db
   #_{:scale/last-weight 0 ;; in grams
      :scale/connected? false
      :screen/current :logo
-     :gym/users {}}
+     :gym/users-search {}}
   {:scale/last-weight 0
    :scale/connected? true
    :screen/current :logo
-   :gym/users {}})
+   :gym/users-search {}})

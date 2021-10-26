@@ -17,13 +17,13 @@
    (or (:screen/current db) :logo)))
 
 (reg-sub
- :gym/users
+ :gym/users-search
  (fn [db _]
-   (:gym/users db)))
+   (:gym/users-search db)))
 
 (reg-sub
- :gym/users-initials
- :<- [:gym/users]
+ :gym/users-search-initials
+ :<- [:gym/users-search]
  (fn [users _]
    (->> (vals users)
         (map (fn [u]
