@@ -5,4 +5,5 @@
         reagent/reagent {:mvn/version "0.10.0"
                          :exclusions [cljsjs/react cljsjs/react-dom]}
         re-frame/re-frame {:mvn/version "1.2.0"}
-        expound/expound {:mvn/version "0.8.9"}}}
+        expound/expound {:mvn/version "0.8.9"}
+        honeysql/honeysql {:mvn/version "1.0.461"}}}

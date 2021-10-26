@@ -19,7 +19,9 @@
    :sqlite/open {:db-name "GymScale"
                  :db-version "1.0"
                  :db-display-name "SQLite gym scale database"
-                 :db-size 200000}})
+                 :db-size 200000}
+   ;; TODO: remove
+   :dispatch [:scale/on-weight-change 76000]})
 
 (reg-event-fx :app/init [sc] init)
 
@@ -33,10 +35,22 @@
 
 (reg-event-fx :scale/close-connection [sc] close-connection)
 
-(defn on-weight-change [db [_ w]]
-  (assoc db :scale/last-weight w))
+(defn on-weight-change [{:keys [db]} [_ w]]
+  (cond-> {:db (assoc db :scale/last-weight w)}
+    (= :logo (:screen/current db)) (assoc :dispatch [:screen/switch :user-select-1])))
 
-(reg-event-db :scale/on-weight-change [] on-weight-change)
+(reg-event-fx :scale/on-weight-change [] on-weight-change)
+
+(defn screen-switch [{:keys [db]} [_ screen]]
+  (let [db' (assoc db :screen/current screen)]
+    (case screen
+     :logo          {:db db'}
+     :user-select-1 {:db db'
+                     :dispatch-n [[:sqlite-db/load-all-users]]}
+     :user-select-2 {:db db'}
+     :user-check    {:db db'})))
+
+(reg-event-fx :screen/switch [sc] screen-switch)
 
 (defn connected [db _]
   (assoc db :scale/connected? true))
@@ -61,15 +75,15 @@
 (reg-event-db :sqlite-db/error [sc] db-error)
 
 (defn users-loaded [db [_ all-users]]
-   (js/console.log "All users" (clj->js all-users))
-  db)
+  (assoc db :gym/users (->> all-users
+                            (map (fn [u] [(:user/id u) u]))
+                            (into {}))))
 
 (reg-event-db :sqlite-db/users-loaded [sc] users-loaded)
 
 (defn load-users [_ _]
-  {:sqlite/execute-sql {:query "SELECT * from users;"
-                        :params-vec []
-                        :succ-ev [:db/users-loaded]
-                        :err-ev  [:db/error]}})
+  {:sqlite/execute-sql {:honey-query {:select [:user/id :user/name] :from [:users]}
+                        :succ-ev [:sqlite-db/users-loaded]
+                        :err-ev  [:sqlite-db/error]}})
 
 (reg-event-fx :sqlite-db/load-all-users [sc] load-users)
