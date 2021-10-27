@@ -21,9 +21,7 @@
    :sqlite/open {:db-name "GymScale"
                  :db-version "1.0"
                  :db-display-name "SQLite gym scale database"
-                 :db-size 200000}
-   ;; TODO: remove
-   :dispatch [:scale/on-weight-change 76000]})
+                 :db-size 200000}})
 
 (reg-event-fx :app/init [sc] init)
 
@@ -60,8 +58,10 @@
   {:db (assoc db :screen/current :user-select-2)
    :dispatch-n [[:sqlite-db/load-all-users letter]]})
 
-(defn switch-to-user-check [{:keys [db]} [_]]
-  {:db (assoc db :screen/current :user-check)})
+(defn switch-to-user-check [{:keys [db]} [_ user]]
+  {:db (assoc db
+              :screen/current :user-check
+              :gym/selected-user-data user)})
 
 (reg-event-fx :screen/switch-to-logo [sc] switch-to-logo)
 (reg-event-fx :screen/switch-to-user-select-1 [sc] switch-to-user-select-1)
@@ -91,9 +91,7 @@
 (reg-event-db :sqlite-db/error [sc] db-error)
 
 (defn users-loaded [db [_ all-users]]
-  (assoc db :gym/users-search (->> all-users
-                                   (map (fn [u] [(:user/id u) u]))
-                                   (into {}))))
+  (assoc db :gym/users-search all-users))
 
 (reg-event-db :sqlite-db/users-loaded [sc] users-loaded)
 
@@ -105,3 +103,18 @@
                         :err-ev  [:sqlite-db/error]}})
 
 (reg-event-fx :sqlite-db/load-all-users [sc] load-users)
+
+(defn check-in-success [{:keys [db]} _]
+  {:db (assoc db :gym/checked-in? true)})
+
+(reg-event-fx :sqlite-db/check-in-success [sc] check-in-success)
+
+(defn user-check-in [{:keys [db]} [_ user-id]]
+  {:sqlite/execute-sql {:honey-query {:insert-into :checkins
+                                      :values [{:user/id user-id
+                                                :date "2021-10-27"
+                                                :user/weight (:scale/last-weight db)}]}
+                        :succ-ev [:sqlite-db/check-in-success]
+                        :err-ev [:sqlite-db/error]}})
+
+(reg-event-fx :user/check-in [sc] user-check-in)

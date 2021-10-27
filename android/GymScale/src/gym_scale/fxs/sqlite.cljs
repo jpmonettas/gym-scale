@@ -14,8 +14,18 @@
                #(js/console.log "version table created")
                #(js/console.error "Error creating version table" %))
   (.executeSql tx
-               "CREATE TABLE IF NOT EXISTS users(user_SLASH_id INTEGER PRIMARY KEY NOT NULL,
+               "CREATE TABLE IF NOT EXISTS users(user_SLASH_id   INTEGER PRIMARY KEY NOT NULL,
                                                  user_SLASH_name VARCHAR(30));"
+               []
+               #(js/console.log "users table created")
+               #(js/console.error "Error creating users table" %))
+  (.executeSql tx
+               "CREATE TABLE IF NOT EXISTS checkins(user_SLASH_id     INTEGER NOT NULL,
+                                                    date              TEXT NOT NULL,
+                                                    user_SLASH_weight INTEGER,
+
+                                                    PRIMARY KEY(user_SLASH_id, date)
+                                                   );"
                []
                #(js/console.log "users table created")
                #(js/console.error "Error creating users table" %)))
@@ -30,6 +40,7 @@
         error-handler (fn [err] (js/console.err "Problem inserting dummy data" err))]
     (try
      (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755324,\"Juan\");" [] success-handler error-handler)
+     (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755334,\"Jose Pedro\");" [] success-handler error-handler)
      (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755330,\"Cote\");" [] success-handler error-handler)
      (catch js/Object e (js/console.error "ERROR populate-with-dummy-data" e))))
   (js/console.info "Dummy data added"))
@@ -92,6 +103,22 @@
 
                        (catch js/Object e (js/console.error "ERROR :sqlite/execute-sql" e))))))))
 
+(defn query-and-log [query]
+  (.executeSql @db*
+               query
+               (clj->js [])
+               (fn on-success [result-set]
+                 (->> (range (-> result-set .-rows .-length))
+                      (mapv (fn [i]
+                              (let [res-map (-> result-set
+                                                .-rows
+                                                (.item i)
+                                                js->clj)]
+                                (update-keys res-map (comp keyword demunge)))))
+                      prn))
+               (fn on-error [err]
+                 (js/console.error "" err))))
+
 (comment
 
   (.transaction @db* drop-all-tables #() #())
@@ -99,12 +126,9 @@
                 #(println "ERROR" %1)
                 #(println "OK"))
 
-  (.executeSql @db*
-               "SELECT 1 FROM users;"
-                  []
-                  (fn on-success [data]
-                    (js/console.info (str (js->clj data))))
-                  (fn on-error [err]
-                    (js/console.error "" err)))
+
+  (query-and-log "select * from users;")
+  (query-and-log "select * from checkins;")
+
   (dispatch [:sqlite-db/load-all-users])
   )

@@ -25,7 +25,17 @@
  :gym/users-search-initials
  :<- [:gym/users-search]
  (fn [users _]
-   (->> (vals users)
+   (->> users
         (map (fn [u]
                (-> u :user/name first str)))
         (into #{}))))
+
+(reg-sub
+ :gym/selected-user-data
+ (fn [db _]
+   (:gym/selected-user-data db)))
+
+(reg-sub
+ :gym/checked-in?
+ (fn [db _]
+   (:gym/checked-in? db)))
