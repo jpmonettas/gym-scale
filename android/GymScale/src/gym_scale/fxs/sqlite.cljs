@@ -99,6 +99,6 @@
                                                                                        js->clj)]
                                                                       (update-keys res-map (comp keyword demunge))))))]
                                           (dispatch (into [succ-ev-key rows-vec] succ-ev-args))))
-                                      (fn error [err] (js/console.err "Error executing query" err))))
+                                      (fn error [err] (js/console.error "Error executing query" err))))
 
                        (catch js/Object e (js/console.error "ERROR :sqlite/execute-sql" e))))))))

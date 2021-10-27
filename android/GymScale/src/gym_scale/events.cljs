@@ -109,10 +109,14 @@
 
 (reg-event-fx :sqlite-db/check-in-success [sc] check-in-success)
 
+(defn now-as-data-str []
+  (let  [d (js/Date.)]
+    (str (.getFullYear d) "-" (inc (.getMonth d)) "-" (.getDate d))))
+
 (defn user-check-in [{:keys [db]} [_ user-id]]
   {:sqlite/execute-sql {:honey-query {:insert-into :checkins
                                       :values [{:user/id user-id
-                                                :date "2021-10-27"
+                                                :date (now-as-data-str)
                                                 :user/weight (:scale/last-weight db)}]}
                         :succ-ev [:sqlite-db/check-in-success]
                         :err-ev [:sqlite-db/error]}})
