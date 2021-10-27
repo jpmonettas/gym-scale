@@ -102,33 +102,3 @@
                                       (fn error [err] (js/console.err "Error executing query" err))))
 
                        (catch js/Object e (js/console.error "ERROR :sqlite/execute-sql" e))))))))
-
-(defn query-and-log [query]
-  (.executeSql @db*
-               query
-               (clj->js [])
-               (fn on-success [result-set]
-                 (->> (range (-> result-set .-rows .-length))
-                      (mapv (fn [i]
-                              (let [res-map (-> result-set
-                                                .-rows
-                                                (.item i)
-                                                js->clj)]
-                                (update-keys res-map (comp keyword demunge)))))
-                      prn))
-               (fn on-error [err]
-                 (js/console.error "" err))))
-
-(comment
-
-  (.transaction @db* drop-all-tables #() #())
-  (.transaction @db* populate-with-dummy-data
-                #(println "ERROR" %1)
-                #(println "OK"))
-
-
-  (query-and-log "select * from users;")
-  (query-and-log "select * from checkins;")
-
-  (dispatch [:sqlite-db/load-all-users])
-  )
