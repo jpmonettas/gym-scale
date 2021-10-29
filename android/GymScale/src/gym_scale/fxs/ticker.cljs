@@ -4,7 +4,7 @@
 (def interval-id (atom nil))
 
 (reg-fx
- :start-ticker
+ :ticker/start
  (fn [millis]
    (reset! interval-id
            (js/setInterval (fn []
@@ -12,6 +12,6 @@
                            millis))))
 
 (reg-fx
- :stop-ticker
+ :ticker/stop
  (fn []
    (js/clearInterval @interval-id)))

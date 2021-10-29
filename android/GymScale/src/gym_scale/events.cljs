@@ -26,7 +26,7 @@
 
 (defn init [_ _]
   {:db db/initial-db
-   :start-ticker 5000
+   :ticker/start 5000
    :sqlite/open {:db-name "GymScale"
                  :db-version "1.0"
                  :db-display-name "SQLite gym scale database"
