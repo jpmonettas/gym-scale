@@ -28,11 +28,14 @@
 (s/def :state/current ::backable-state)
 (s/def :state/prev-stack (s/coll-of ::backable-state))
 
+(s/def :clock/date-time-str string?)
+
 (s/def ::db (s/keys :req [:scale/last-weight
                           :scale/connected?
                           :state/current
                           :state/prev-stack]
-                    :opt [:gym/checked-in?]))
+                    :opt [:gym/checked-in?
+                          :clock/date-time-str]))
 
 (def initial-db
   {:scale/last-weight 0 ;; in grams

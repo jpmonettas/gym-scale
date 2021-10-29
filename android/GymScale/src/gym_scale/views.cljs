@@ -7,6 +7,7 @@
   (let [scale-connected? @(subscribe [:scale/connected?])
         last-weight @(subscribe [:scale/last-weight])
         screen @(subscribe [:screen/current])
+        datetime-str @(subscribe [:clock/date-time-str])
         disabled (#{:logo :user-select-1} screen )]
     [rn/view {:flex 1
               :flex-direction :row
@@ -27,7 +28,7 @@
        [rn/button {:on-press (fn [] (dispatch [:scale/open-connection]))
                    :title "Conectar"}])
 
-     [rn/text {:style {:font-size 30}} "26/10 08:40"]]))
+     [rn/text {:style {:font-size 30}} (or datetime-str "20/10 00:00")]]))
 
 
 (defn screen-logo []

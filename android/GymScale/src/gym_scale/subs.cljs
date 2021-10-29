@@ -39,3 +39,8 @@
  :gym/checked-in?
  (fn [db _]
    (:gym/checked-in? db)))
+
+(reg-sub
+ :clock/date-time-str
+ (fn [db _]
+   (:clock/date-time-str db)))

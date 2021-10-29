@@ -26,6 +26,7 @@
 
 (defn init [_ _]
   {:db db/initial-db
+   :start-ticker 5000
    :sqlite/open {:db-name "GymScale"
                  :db-version "1.0"
                  :db-display-name "SQLite gym scale database"
@@ -115,6 +116,11 @@
                         :succ-ev [:sqlite-db/check-in-success]
                         :err-ev [:sqlite-db/error]}})
 
+(defn clock-tick [db [_]]
+  (let [d (js/Date.)]
+    (assoc db :clock/date-time-str
+           (str (.getDate d) "/" (inc (.getMonth d)) " " (.getHours d) ":" (.getMinutes d)))))
+
 (reg-event-fx :app/init                       [sc]          init)
 (reg-event-fx :scale/open-connection          [sc]          open-connection)
 (reg-event-fx :scale/close-connection         [sc]          close-connection)
@@ -131,3 +137,4 @@
 (reg-event-fx :sqlite-db/load-users           [sc]          load-users)
 (reg-event-fx :sqlite-db/check-in-success     [sc]          check-in-success)
 (reg-event-fx :user/check-in                  [sc]          user-check-in)
+(reg-event-db :ticker/tick                    []            clock-tick)
