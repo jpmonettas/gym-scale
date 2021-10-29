@@ -94,9 +94,9 @@
   db)
 
 (defn load-users [_ [_ user-name-prefix success-ev]]
-  {:sqlite/execute-sql {:honey-query (cond-> {:select [:user/id :user/name]
+  {:sqlite/execute-sql {:honey-query (cond-> {:select [:*]
                                               :from [:users]}
-                                       user-name-prefix (sqlh/merge-where [:like :user/name (str user-name-prefix "%")]))
+                                       user-name-prefix (sqlh/merge-where [:like :user/last-name (str user-name-prefix "%")]))
                         :succ-ev success-ev
                         :err-ev  [:sqlite-db/error]}})
 

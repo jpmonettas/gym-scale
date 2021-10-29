@@ -19,9 +19,8 @@
                               (let [success-handler (fn [] (js/console.info "Dummy data record added successfully"))
                                     error-handler (fn [err] (js/console.err "Problem inserting dummy data" err))]
                                 (try
-                                  (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755324,\"Juan\");" [] success-handler error-handler)
-                                  (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755334,\"Jose Pedro\");" [] success-handler error-handler)
-                                  (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755330,\"Cote\");" [] success-handler error-handler)
+                                  (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_first_name,user_SLASH_last_name,user_SLASH_phone,user_SLASH_birthday) VALUES (38755324,\"Juan Pedro\",\"Monetta Sanchez\", \"098164800\", \"1983-10-20\");" [] success-handler error-handler)
+                                  (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_first_name,user_SLASH_last_name,user_SLASH_phone,user_SLASH_birthday) VALUES (38755330,\"Jose Ignacio\",\"Monetta Sanchez\", \"098164800\", \"1986-09-25\");" [] success-handler error-handler)
                                   (catch js/Object e (js/console.error "ERROR populate-with-dummy-data" e))))
                               (js/console.info "Dummy data added"))
                 #(js/console.error "Problem populating db with dummy data" %1)
@@ -43,6 +42,45 @@
                (fn on-error [err]
                  (js/console.error "" err))))
 
+(def connected-logo-state {:scale/last-weight 0
+                           :scale/connected? true
+                           :state/current {:screen/current :logo}
+                           :state/prev-stack ()})
+
+(def user-select-initial-state
+  {:scale/last-weight 76000,
+   :scale/connected? true,
+   :state/current
+   {:screen/current :user-select-1,
+    :gym/users-search [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
+                       #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}]},
+   :state/prev-stack ()})
+
+(def user-select-name-state
+  {:scale/last-weight 76000,
+   :scale/connected? true,
+   :state/current
+   {:screen/current :user-select-2,
+    :gym/users-search [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
+                       #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}]},
+   :state/prev-stack '({:screen/current :user-select-1,
+                        :gym/users-search [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
+                                           #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}]})})
+
+(def user-check-state
+  {:scale/last-weight 76000,
+   :scale/connected? true,
+   :state/current
+   {:screen/current :user-check, :gym/users-search
+    [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
+     #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}],
+    :gym/selected-user-data #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}},
+   :state/prev-stack '({:screen/current :user-select-2,
+                        :gym/users-search [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
+                                           #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}]}
+                       {:screen/current :user-select-1,
+                        :gym/users-search [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
+                                           #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}]})})
 (comment
 
 
@@ -50,53 +88,19 @@
 
   ;; connected, on logo screen
   (do
-    (reset! app-db {:scale/last-weight 0
-                    :scale/connected? true
-                    :state/current {:screen/current :logo}
-                    :state/prev-stack ()})
+    (reset! app-db connected-logo-state)
     (dispatch [:scale/on-weight-change 76000]))
 
     (dispatch [:scale/on-weight-change 10])
 
   ;; advanced to user-select-1
-  (reset! app-db
-          {:scale/last-weight 76000,
-           :scale/connected? true,
-           :state/current {:screen/current :user-select-1,
-                           :gym/users-search [#:user{:name "Juan", :id 38755324}
-                                              #:user{:name "Cote", :id 38755330}
-                                              #:user{:name "Jose Pedro", :id 38755334}]},
-           :state/prev-stack ()})
+  (reset! app-db user-select-initial-state)
 
-  ;; advanced to user-select-2 under letter J
-  (reset! app-db
-          {:scale/last-weight 76000,
-           :scale/connected? true,
-           :state/current
-           {:screen/current :user-select-2,
-            :gym/users-search [#:user{:name "Juan", :id 38755324}
-                               #:user{:name "Jose Pedro", :id 38755334}]},
-           :state/prev-stack '({:screen/current :user-select-1,
-                                :gym/users-search [#:user{:name "Juan", :id 38755324}
-                                                   #:user{:name "Cote", :id 38755330}
-                                                   #:user{:name "Jose Pedro", :id 38755334}]})})
+  ;; advanced to user-select-2 under letter M
+  (reset! app-db user-select-name-state)
 
   ;; advanced to user-check
-  (reset! app-db
-          {:scale/last-weight 76000,
-           :scale/connected? true,
-           :state/current {:screen/current :user-check,
-                           :gym/users-search [#:user{:name "Juan", :id 38755324}
-                                              #:user{:name "Jose Pedro", :id 38755334}],
-                           :gym/selected-user-data #:user{:name "Juan", :id 38755324}},
-           :state/prev-stack '({:screen/current :user-select-2,
-                                :gym/users-search [#:user{:name "Juan", :id 38755324}
-                                                   #:user{:name "Jose Pedro", :id 38755334}]}
-                               {:screen/current :user-select-1,
-                                :gym/users-search [#:user{:name "Juan", :id 38755324}
-                                                   #:user{:name "Cote", :id 38755330}
-                                                   #:user{:name "Jose Pedro", :id 38755334}]})})
-
+  (reset! app-db user-check-state)
 
   (query-and-print "select * from users;")
   (query-and-print "select * from checkins;")

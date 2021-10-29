@@ -10,7 +10,10 @@
 (s/def :user/name string?)
 
 (s/def :gym/user-data (s/keys :req [:user/id
-                                    :user/name]))
+                                    :user/first-name
+                                    :user/last-name
+                                    :user/phone
+                                    :user/birthday]))
 
 (s/def :gym/users-search (s/coll-of :gym/user-data))
 

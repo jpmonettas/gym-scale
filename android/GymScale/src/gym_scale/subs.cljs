@@ -27,7 +27,7 @@
  (fn [users _]
    (->> users
         (map (fn [u]
-               (-> u :user/name first str)))
+               (-> u :user/last-name first str)))
         (into #{}))))
 
 (reg-sub

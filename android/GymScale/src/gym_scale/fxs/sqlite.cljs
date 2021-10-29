@@ -14,8 +14,13 @@
                #(js/console.log "version table created")
                #(js/console.error "Error creating version table" %))
   (.executeSql tx
-               "CREATE TABLE IF NOT EXISTS users(user_SLASH_id   INTEGER PRIMARY KEY NOT NULL,
-                                                 user_SLASH_name VARCHAR(30));"
+               "CREATE TABLE IF NOT EXISTS users(user_SLASH_id         INTEGER NOT NULL,
+                                                 user_SLASH_first_name VARCHAR(30) NOT NULL,
+                                                 user_SLASH_last_name  VARCHAR(30) NOT NULL,
+                                                 user_SLASH_birthday   TEXT NOT NULL,
+                                                 user_SLASH_phone      VARCHAR(20) NOT NULL,
+
+                                                 PRIMARY KEY(user_SLASH_id));"
                []
                #(js/console.log "users table created")
                #(js/console.error "Error creating users table" %))
@@ -24,11 +29,12 @@
                                                     date              TEXT NOT NULL,
                                                     user_SLASH_weight INTEGER,
 
-                                                    PRIMARY KEY(user_SLASH_id, date)
+                                                    PRIMARY KEY(user_SLASH_id, date),
+                                                    FOREIGN KEY(user_SLASH_id) REFERENCES users(user_SLASH_id)
                                                    );"
                []
-               #(js/console.log "users table created")
-               #(js/console.error "Error creating users table" %)))
+               #(js/console.log "checkins table created")
+               #(js/console.error "Error creating checkins table" %)))
 
 (reg-fx
  :sqlite/open
@@ -66,7 +72,10 @@
 
                      (try
 
-                       (let [[query & params] (binding [sql-format/*name-transform-fn* munge]
+                       (let [[query & params] (binding [sql-format/*name-transform-fn* (fn [name]
+                                                                                         (if-not (#{"*"} name)
+                                                                                           (munge name)
+                                                                                           name))]
                                                 (sql/format honey-query :allow-namespaced-names? true))]
                          (js/console.log "[QUERY]" query
                                          "(VALS)" (clj->js params))

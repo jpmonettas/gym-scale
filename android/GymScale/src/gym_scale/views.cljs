@@ -76,7 +76,7 @@
          [rn/view {:margin 5
                    :background-color :yellow}
           [rn/text {:style {:font-size 30}}
-           (str (:user/name u))]]])]]))
+           (str (:user/last-name u) ", " (:user/first-name u))]]])]]))
 
 (defn screen-user-check []
   (let [user @(subscribe [:gym/selected-user-data])
@@ -84,6 +84,11 @@
     [rn/view {:justify-content :center
               :align-items :center
               :height "100%"}
+
+     [rn/text {:style {:font-size 30
+                       :margin-bottom 50}}
+      (str "Bienvenido " (:user/first-name user))]
+
      [rn/view {:width "80%"}
       (when-not checked-in?
         [rn/touchable-highlight {:on-press (fn []
