@@ -14,12 +14,12 @@
 (reg-sub
  :screen/current
  (fn [db _]
-   (or (:screen/current db) :logo)))
+   (or (get-in db [:state/current :screen/current]) :logo)))
 
 (reg-sub
  :gym/users-search
  (fn [db _]
-   (:gym/users-search db)))
+   (get-in db [:state/current :gym/users-search])))
 
 (reg-sub
  :gym/users-search-initials
@@ -33,7 +33,7 @@
 (reg-sub
  :gym/selected-user-data
  (fn [db _]
-   (:gym/selected-user-data db)))
+   (get-in db [:state/current :gym/selected-user-data])))
 
 (reg-sub
  :gym/checked-in?

@@ -5,14 +5,21 @@
 
 (defn app-top-bar []
   (let [scale-connected? @(subscribe [:scale/connected?])
-        last-weight @(subscribe [:scale/last-weight])]
+        last-weight @(subscribe [:scale/last-weight])
+        screen @(subscribe [:screen/current])
+        disabled (#{:logo :user-select-1} screen )]
     [rn/view {:flex 1
               :flex-direction :row
               :justify-content :space-between
               :align-items :center
               :background-color :red}
 
-     [rn/button {:title "<<<"}]
+     [rn/touchable-highlight {:on-press (fn []
+                                          (dispatch [:screen/back]))
+                              :disabled disabled}
+      [rn/view {:background-color (if disabled :grey :yellow)
+                :padding 10}
+       [rn/text {:style {:font-size 30}} "<"]]]
 
      (if scale-connected?
        [rn/text {:style {:font-size 40}}
@@ -42,7 +49,7 @@
         (let [symb-enabled? (contains? users-initials symb)]
           ^{:key symb}
           [rn/touchable-highlight {:on-press (fn []
-                                               (dispatch [:screen/switch-to-user-select-2 symb]))
+                                               (dispatch [:sqlite-db/load-users symb [:screen/switch-to-user-select-2]]))
                                    :disabled (not symb-enabled?)}
           [rn/view {:border-width 1
                     :border-color :black

@@ -18,13 +18,22 @@
 
 (s/def :gym/checked-in? boolean?)
 
+(s/def ::backable-state (s/keys :req [:screen/current]
+                                :opt [:gym/users-search
+                                      :gym/selected-user-data]))
+
+(s/def :state/current ::backable-state)
+(s/def :state/prev-stack (s/coll-of ::backable-state))
+
 (s/def ::db (s/keys :req [:scale/last-weight
-                          :scale/connected?]
-                    :opt [:gym/users-search
-                          :gym/selected-user-data
-                          :gym/checked-in?]))
+                          :scale/connected?
+                          :state/current
+                          :state/prev-stack]
+                    :opt [:gym/checked-in?]))
 
 (def initial-db
   {:scale/last-weight 0 ;; in grams
    :scale/connected? false
-   :screen/current :logo})
+   :state/current {:screen/current :logo}
+   :state/prev-stack ()
+   })

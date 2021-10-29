@@ -30,21 +30,6 @@
                #(js/console.log "users table created")
                #(js/console.error "Error creating users table" %)))
 
-(defn drop-all-tables [tx]
-  (.executeSql tx "DROP TABLE IF EXISTS version;")
-  (.executeSql tx "DROP TABLE IF EXISTS users;")
-  (js/console.info "All tables dorpped."))
-
-(defn populate-with-dummy-data [tx]
-  (let [success-handler (fn [] (js/console.info "Dummy data record added successfully"))
-        error-handler (fn [err] (js/console.err "Problem inserting dummy data" err))]
-    (try
-     (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755324,\"Juan\");" [] success-handler error-handler)
-     (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755334,\"Jose Pedro\");" [] success-handler error-handler)
-     (.executeSql tx "INSERT INTO users (user_SLASH_id,user_SLASH_name) VALUES (38755330,\"Cote\");" [] success-handler error-handler)
-     (catch js/Object e (js/console.error "ERROR populate-with-dummy-data" e))))
-  (js/console.info "Dummy data added"))
-
 (reg-fx
  :sqlite/open
  (fn [{:keys [db-name db-version db-display-name db-size]}]
