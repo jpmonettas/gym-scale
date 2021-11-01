@@ -1,8 +1,10 @@
 (ns gym-scale.views.admin
   (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.react-native :as rn]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            ["react-native-vector-icons/FontAwesome$default" :as Icon]))
 
+(def icon (r/adapt-react-class Icon))
 
 (def default-pin "2468")
 
@@ -45,10 +47,31 @@
 
 (defn users-crud []
   (let [all-users @(subscribe [:gym/all-users])]
-    [rn/view {}
-     [rn/text {}
-      "Users crud"]
-     [rn/text {} (str all-users)]]))
+    [rn/view {:background-color :pink
+              :height "100%"
+              :justify-content :center
+              :align-items :center
+              :padding-top 40
+              :padding-bottom 40}
+     [rn/scroll-view {:width "80%"
+                      :background-color :orange}
+      [rn/button {:on-press #()
+                  :title "Nuevo"} ]
+      (for [u all-users]
+        ^{:key (str (:user/id u))}
+        [rn/view {:margin 5
+                  :flex-direction :row
+                  :justify-content :space-between
+                  :background-color :yellow}
+         [rn/text {:style {:font-size 30}}
+          (str (:user/last-name u) ", " (:user/first-name u))]
+         [rn/view {:flex-direction :row
+                   :width 60
+                   :justify-content :space-between}
+          [rn/touchable-highlight {:on-press (fn [] (js/console.log "Editing user" (:user/first-name u)))}
+           [icon {:name "pencil" :size 30 :color :green}]]
+          [rn/touchable-highlight {:on-press (fn [] (js/console.log "Deleting user" (:user/first-name u)))}
+           [icon {:name "trash-o" :size 30 :color :green}]]]])]]))
 
 (defn menu-button [{:keys [text on-click]}]
   [rn/touchable-highlight {:on-press on-click}

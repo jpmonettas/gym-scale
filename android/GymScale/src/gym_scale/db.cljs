@@ -41,8 +41,25 @@
                           :clock/date-time-str]))
 
 (def initial-db
-  {:scale/last-weight 0 ;; in grams
+  #_{:scale/last-weight 0 ;; in grams
    :scale/connected? false
    :state/current {:screen/current :logo}
    :state/prev-stack ()
-   })
+     }
+  {:scale/last-weight 0,
+   :scale/connected? false,
+   :state/current
+   {:screen/current :users-crud,
+    :gym/all-users
+    [#:user{:phone "098164800",
+            :last-name "Monetta Sanchez",
+            :first-name "Juan Pedro",
+            :birthday "1983-10-20",
+            :id 38755324}
+     #:user{:phone "098164800",
+            :last-name "Monetta Sanchez",
+            :first-name "Jose Ignacio",
+            :birthday "1986-09-25",
+            :id 38755330}]},
+   :state/prev-stack
+   '(#:screen{:current :admin-menu} #:screen{:current :logo})})
