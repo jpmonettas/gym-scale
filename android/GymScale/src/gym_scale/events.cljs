@@ -85,6 +85,11 @@
            ;; goes back directly to the logo screen instead of the pinpad
            (update :state/prev-stack pop))})
 
+(defn switch-to-users-crud [{:keys [db]} [_ users]]
+  {:db (-> db
+           (set-current-screen :users-crud)
+           (assoc-in [:state/current :gym/all-users] users))})
+
 (defn screen-back [{:keys [db]} _]
   (let [{:keys [state/current state/prev-stack]} db]
     {:db (-> db
@@ -142,6 +147,7 @@
 (reg-event-fx :screen/switch-to-user-check    [backable sc] switch-to-user-check)
 (reg-event-fx :screen/switch-to-admin         [backable sc] switch-to-admin)
 (reg-event-fx :screen/switch-to-admin-menu    [backable sc] switch-to-admin-menu)
+(reg-event-fx :screen/switch-to-users-crud    [backable sc] switch-to-users-crud)
 (reg-event-fx :screen/back                    [sc]          screen-back)
 (reg-event-db :scale/connected                [sc]          connected)
 (reg-event-db :scale/disconnected             [sc]          disconnected)

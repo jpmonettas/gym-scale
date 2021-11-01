@@ -43,7 +43,30 @@
                     :width "100%"
                     :justify-content :center}      [pd "0"]]]]))))
 
+(defn users-crud []
+  (let [all-users @(subscribe [:gym/all-users])]
+    [rn/view {}
+     [rn/text {}
+      "Users crud"]
+     [rn/text {} (str all-users)]]))
+
+(defn menu-button [{:keys [text on-click]}]
+  [rn/touchable-highlight {:on-press on-click}
+   [rn/view {:margin 5
+             :background-color :yellow}
+    [rn/text {:style {:font-size 30
+                      :padding 10
+                      :text-align :center}}
+     text]]])
+
 (defn menu []
   [rn/view {}
-   [rn/text {}
-    "Admin menu"]])
+   [rn/view {:justify-content :center
+             :align-items :center
+             :height "100%"}
+
+    [rn/view {:width "80%"}
+     [menu-button {:text "Mantenimiento usuarios"
+                   :on-click (fn [] (dispatch [:sqlite-db/load-users nil [:screen/switch-to-users-crud]]))}]
+     [menu-button {:text "Pagos"}]
+     [menu-button {:text "Cumpleaños"}]]]])

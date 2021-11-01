@@ -5,7 +5,7 @@
 (s/def :scale/connected? boolean?)
 
 (s/def :screen/current #{:logo :user-select-1 :user-select-2 :user-check
-                         :pinpad :admin-menu})
+                         :pinpad :admin-menu :users-crud})
 
 (s/def :user/id number?)
 (s/def :user/name string?)
@@ -17,6 +17,7 @@
                                     :user/birthday]))
 
 (s/def :gym/users-search (s/coll-of :gym/user-data))
+(s/def :gym/all-users (s/coll-of :gym/user-data))
 
 (s/def :gym/selected-user-data :gym/user-data)
 
@@ -24,7 +25,8 @@
 
 (s/def ::backable-state (s/keys :req [:screen/current]
                                 :opt [:gym/users-search
-                                      :gym/selected-user-data]))
+                                      :gym/selected-user-data
+                                      :gym/all-users]))
 
 (s/def :state/current ::backable-state)
 (s/def :state/prev-stack (s/coll-of ::backable-state))

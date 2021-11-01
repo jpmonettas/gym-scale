@@ -124,4 +124,5 @@
         :user-check    [screen-user-check]
 
         :pinpad        [admin-views/pinpad]
-        :admin-menu    [admin-views/menu])]]))
+        :admin-menu    [admin-views/menu]
+        :users-crud    [admin-views/users-crud])]]))

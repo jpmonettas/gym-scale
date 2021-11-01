@@ -44,3 +44,8 @@
  :clock/date-time-str
  (fn [db _]
    (:clock/date-time-str db)))
+
+(reg-sub
+ :gym/all-users
+ (fn [db _]
+   (get-in db [:state/current :gym/all-users])))
