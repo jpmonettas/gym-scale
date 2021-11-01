@@ -1,7 +1,8 @@
-(ns gym-scale.views
+(ns gym-scale.views.user
   (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.react-native :as rn]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [gym-scale.views.admin :as admin-views]))
 
 (defn app-top-bar []
   (let [scale-connected? @(subscribe [:scale/connected?])
@@ -32,10 +33,12 @@
 
 
 (defn screen-logo []
-  [rn/view {:height "100%"
-            :justify-content :center
-            :align-items :center}
-   [rn/text {} "LOGO"]])
+  [rn/touchable-highlight {:on-press (fn []
+                                       (dispatch [:screen/switch-to-admin]))}
+   [rn/view {:height "100%"
+             :justify-content :center
+             :align-items :center}
+    [rn/text {} "LOGO"]]])
 
 (defn screen-user-select-1 []
   (let [alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -118,4 +121,7 @@
         :logo          [screen-logo]
         :user-select-1 [screen-user-select-1]
         :user-select-2 [screen-user-select-2]
-        :user-check    [screen-user-check])]]))
+        :user-check    [screen-user-check]
+
+        :pinpad        [admin-views/pinpad]
+        :admin-menu    [admin-views/menu])]]))

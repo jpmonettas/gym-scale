@@ -4,7 +4,8 @@
 (s/def :scale/last-weight number?)
 (s/def :scale/connected? boolean?)
 
-(s/def :screen/current #{:logo :user-select-1 :user-select-2 :user-check})
+(s/def :screen/current #{:logo :user-select-1 :user-select-2 :user-check
+                         :pinpad :admin-menu})
 
 (s/def :user/id number?)
 (s/def :user/name string?)

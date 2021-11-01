@@ -74,6 +74,17 @@
            (set-current-screen :user-check)
            (assoc-in [:state/current :gym/selected-user-data] user))})
 
+(defn switch-to-admin [{:keys [db]} _]
+  {:db (-> db
+           (set-current-screen :pinpad))})
+
+(defn switch-to-admin-menu [{:keys [db]} _]
+  {:db (-> db
+           (set-current-screen :admin-menu)
+           ;; discard the top of the prev-stack so the back button
+           ;; goes back directly to the logo screen instead of the pinpad
+           (update :state/prev-stack pop))})
+
 (defn screen-back [{:keys [db]} _]
   (let [{:keys [state/current state/prev-stack]} db]
     {:db (-> db
@@ -129,6 +140,8 @@
 (reg-event-fx :screen/switch-to-user-select-1 [sc]          switch-to-user-select-1)
 (reg-event-fx :screen/switch-to-user-select-2 [backable sc] switch-to-user-select-2)
 (reg-event-fx :screen/switch-to-user-check    [backable sc] switch-to-user-check)
+(reg-event-fx :screen/switch-to-admin         [backable sc] switch-to-admin)
+(reg-event-fx :screen/switch-to-admin-menu    [backable sc] switch-to-admin-menu)
 (reg-event-fx :screen/back                    [sc]          screen-back)
 (reg-event-db :scale/connected                [sc]          connected)
 (reg-event-db :scale/disconnected             [sc]          disconnected)
