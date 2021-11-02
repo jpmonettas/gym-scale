@@ -44,6 +44,9 @@
 (defn set-current-screen [db screen]
   (assoc-in db [:state/current :screen/current] screen))
 
+(defn admin-mode? [db]
+  (get-in db [:state/current :gym/admin-mode?]))
+
 (defn on-weight-change [{:keys [db]} [_ w]]
   (cond-> {:db (assoc db :scale/last-weight w)}
 
@@ -51,7 +54,7 @@
          (> w 5000)) ;; we need more than 5kgs on the scale to activate the device
     (assoc :dispatch [:sqlite-db/load-users nil [:screen/switch-to-user-select-1]])
 
-    (< w 5000) ;; if the scale goes under 5kgs asume it is empty so reset UI state
+    (and (< w 5000) (not (admin-mode? db))) ;; if the scale goes under 5kgs asume it is empty so reset UI state unless it is admin mode
     (assoc :db (assoc db/initial-db
                       :scale/connected?  (:scale/connected? db)
                       :scale/last-weight w))))
@@ -76,6 +79,7 @@
 
 (defn switch-to-admin [{:keys [db]} _]
   {:db (-> db
+           (assoc-in [:state/current :gym/admin-mode?] true)
            (set-current-screen :pinpad))})
 
 (defn switch-to-admin-menu [{:keys [db]} _]

@@ -1,3 +1,6 @@
 {:main gym-scale.main
  :output-to "target/main.js"
- :output-dir "target"}
+ :output-dir "target"
+ :optimizations :none
+ ;;:optimizations :simple
+ }
