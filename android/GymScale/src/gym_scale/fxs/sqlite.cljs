@@ -30,7 +30,7 @@
                                                     user_SLASH_weight INTEGER,
 
                                                     PRIMARY KEY(user_SLASH_id, date),
-                                                    FOREIGN KEY(user_SLASH_id) REFERENCES users(user_SLASH_id)
+                                                    CONSTRAINT fk_user_id FOREIGN KEY(user_SLASH_id) REFERENCES users(user_SLASH_id) ON DELETE CASCADE
                                                    );"
                []
                #(js/console.log "checkins table created")
@@ -51,6 +51,9 @@
                            (fn open-callback [])
                            db-error-cb)]
      (reset! db* db)
+
+     ;; enalble sqlite foreign keys, they are disabled by default in all sqlite versions
+     (.executeSql db "PRAGMA foreign_keys = ON")
 
      ;; check if db is already created or if it is first time
      (.executeSql db

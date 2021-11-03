@@ -3,10 +3,12 @@
             [gym-scale.db :as db]
             [gym-scale.fxs.ble]
             [gym-scale.fxs.sqlite]
+            [gym-scale.fxs.ticker]
             [expound.alpha :as expound]
             [clojure.spec.alpha :as s]
             [honeysql.core :as sql]
-            [honeysql.helpers :as sqlh]))
+            [honeysql.helpers :as sqlh]
+            [goog.string :as gstr]))
 
 (defn check-and-throw
   "Throws an exception if `db` doesn't match the Spec `a-spec`."
@@ -51,6 +53,7 @@
   (cond-> {:db (assoc db :scale/last-weight w)}
 
     (and (= :logo (current-screen db))
+         (not (admin-mode? db))
          (> w 5000)) ;; we need more than 5kgs on the scale to activate the device
     (assoc :dispatch [:sqlite-db/load-users nil [:screen/switch-to-user-select-1]])
 
@@ -90,9 +93,18 @@
            (update :state/prev-stack pop))})
 
 (defn switch-to-users-crud [{:keys [db]} [_ users]]
+  (let [db' (-> db
+            (set-current-screen :users-crud)
+            (assoc-in [:state/current :gym/all-users] (->> users
+                                                           (map (fn [u] [(:user/id u) u]))
+                                                           (into {}))))]
+
+    {:db db'}))
+
+(defn switch-to-user-upsert [{:keys [db]} [_ user]]
   {:db (-> db
-           (set-current-screen :users-crud)
-           (assoc-in [:state/current :gym/all-users] users))})
+           (set-current-screen :user-upsert)
+           (assoc-in [:state/current :gym/editing-user] user))})
 
 (defn screen-back [{:keys [db]} _]
   (let [{:keys [state/current state/prev-stack]} db]
@@ -136,6 +148,36 @@
                         :succ-ev [:sqlite-db/check-in-success]
                         :err-ev [:sqlite-db/error]}})
 
+(defn user-upsert-success [cofxs [_ _ user]]
+  ;; @HACKY: go back without dispatching so we skip the `backable` interceptor
+  (let [{:keys [db]} (screen-back cofxs nil)]
+    {:db (assoc-in db [:state/current :gym/all-users (:user/id user)] user)}))
+
+(defn user-upsert [{:keys [db]} [_ user]]
+  (let [user-map {:user/id (:user/id user)
+                  :user/first-name (:user/first-name user)
+                  :user/last-name (:user/last-name user)
+                  :user/phone (:user/phone user)
+                  :user/birthday (:user/birthday user)}]
+    {:sqlite/execute-sql {:honey-query (if (:editing? user)
+                                         {:update :users
+                                          :set user-map
+                                          :where [:= :user/id (:user/id user)]}
+
+                                         {:insert-into :users
+                                          :values [user-map]})
+                          :succ-ev [:sqlite-db/user-upsert-success user]
+                          :err-ev [:sqlite-db/error]}}))
+
+(defn user-delete-success [{:keys [db]} [_ _ user]]
+  {:db (update-in db [:state/current :gym/all-users] dissoc (:user/id user))})
+
+(defn user-delete [{:keys [db]} [_ user]]
+  {:sqlite/execute-sql {:honey-query {:delete-from :users
+                                      :where [:= :user/id (:user/id user)]}
+                        :succ-ev [:sqlite-db/user-delete-success user]
+                        :err-ev [:sqlite-db/error]}})
+
 (defn clock-tick [db [_]]
   (let [d (js/Date.)]
     (assoc db :clock/date-time-str
@@ -152,6 +194,7 @@
 (reg-event-fx :screen/switch-to-admin         [backable sc] switch-to-admin)
 (reg-event-fx :screen/switch-to-admin-menu    [backable sc] switch-to-admin-menu)
 (reg-event-fx :screen/switch-to-users-crud    [backable sc] switch-to-users-crud)
+(reg-event-fx :screen/switch-to-user-upsert   [backable sc] switch-to-user-upsert)
 (reg-event-fx :screen/back                    [sc]          screen-back)
 (reg-event-db :scale/connected                [sc]          connected)
 (reg-event-db :scale/disconnected             [sc]          disconnected)
@@ -159,5 +202,9 @@
 (reg-event-db :sqlite-db/error                [sc]          db-error)
 (reg-event-fx :sqlite-db/load-users           [sc]          load-users)
 (reg-event-fx :sqlite-db/check-in-success     [sc]          check-in-success)
+(reg-event-fx :sqlite-db/user-upsert-success  [sc]          user-upsert-success)
+(reg-event-fx :sqlite-db/user-delete-success  [sc]          user-delete-success)
 (reg-event-fx :user/check-in                  [sc]          user-check-in)
+(reg-event-fx :user/upsert                    [sc]          user-upsert)
+(reg-event-fx :user/delete                    [sc]          user-delete)
 (reg-event-db :ticker/tick                    []            clock-tick)

@@ -1,0 +1,4 @@
+* SQLite upserts
+  Can't use SQLite ON CONFLICT upsert because it was added in version 3.24 and
+  amazon fire 9th gen (API 28) comes with 3.22  
+  

@@ -1,5 +1,5 @@
 (ns gym-scale.dev
-  (:require [re-frame.core :refer [dispatch]]
+  (:require [re-frame.core :refer [dispatch subscribe]]
             [re-frame.db :refer [app-db]]
             [gym-scale.fxs.sqlite :as sqlite]
             [gym-scale.utils :refer [update-keys]]
@@ -81,17 +81,27 @@
                        {:screen/current :user-select-1,
                         :gym/users-search [#:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Juan Pedro", :birthday "1983-10-20", :id 38755324}
                                            #:user{:phone "098164800", :last-name "Monetta Sanchez", :first-name "Jose Ignacio", :birthday "1986-09-25", :id 38755330}]})})
+
+(defn con
+  "Sumulate connecting to BT scale"
+  []
+  (reset! app-db connected-logo-state))
+
+(defn sup
+  "Simulate jumping up on the scale"
+  []
+  (dispatch [:scale/on-weight-change 76000]))
+
+(defn sdown
+  "Simulate jumping off the scale"
+  []
+  (dispatch [:scale/on-weight-change 10]))
+
 (comment
 
 
   @app-db
 
-  ;; connected, on logo screen
-  (do
-    (reset! app-db connected-logo-state)
-    (dispatch [:scale/on-weight-change 76000]))
-
-    (dispatch [:scale/on-weight-change 10])
 
   ;; advanced to user-select-1
   (reset! app-db user-select-initial-state)
@@ -104,6 +114,7 @@
 
   (query-and-print "select * from users;")
   (query-and-print "select * from checkins;")
+  (query-and-print "SELECT sqlite_version();")
 
   (drop-tables)
 

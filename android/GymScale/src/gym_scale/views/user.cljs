@@ -125,4 +125,5 @@
 
         :pinpad        [admin-views/pinpad]
         :admin-menu    [admin-views/menu]
-        :users-crud    [admin-views/users-crud])]]))
+        :users-crud    [admin-views/users-crud]
+        :user-upsert   [admin-views/user-upsert])]]))

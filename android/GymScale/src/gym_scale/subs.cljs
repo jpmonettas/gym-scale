@@ -46,6 +46,13 @@
    (:clock/date-time-str db)))
 
 (reg-sub
- :gym/all-users
+ :gym/all-users-vals
  (fn [db _]
-   (get-in db [:state/current :gym/all-users])))
+   (->> (get-in db [:state/current :gym/all-users])
+        vals
+        (sort-by :user/last-name))))
+
+(reg-sub
+ :gym/editing-user
+ (fn [db _]
+   (get-in db [:state/current :gym/editing-user])))
