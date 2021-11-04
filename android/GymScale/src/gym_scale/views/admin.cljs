@@ -33,9 +33,10 @@
         [rn/view {:justify-content :center
                   :align-items :center
                   :height "100%"}
-         [rn/text-input {:value @pin-ref
+         [rn/text-input {:default-value @pin-ref
                          :secure-text-entry true
-                         :style {:font-size 20}}]
+                         :style {:font-size 20}
+                         :editable false}]
          [rn/view {:flex-direction :row
                    :background-color "#eee"
                    :flex-wrap :wrap
@@ -101,30 +102,32 @@
                          :editable (not (:editing? user))
                          :style style
                          :keyboard-type :numeric
-                         :value (str (:user/id @user-ref))
+                         :default-value (str (:user/id @user-ref))
                          :on-change-text (fn [text] (swap! user-ref assoc :user/id (js/parseInt text)))}]
          [rn/text-input {:placeholder "Nombre"
                          :style style
-                         :value (:user/first-name @user-ref)
+                         :default-value (:user/first-name @user-ref)
                          :on-change-text (fn [text] (swap! user-ref assoc :user/first-name text))}]
          [rn/text-input {:placeholder "Apellido"
                          :style style
-                         :value (:user/last-name @user-ref)
+                         :default-value (:user/last-name @user-ref)
                          :on-change-text (fn [text] (swap! user-ref assoc :user/last-name text))}]]
         [rn/view {:width "45%"
                   :height "100%"
                   :justify-content :space-around}
          [rn/text-input {:placeholder "Fecha nacimiento aaaa-mm-dd"
                          :style style
-                         :value (:user/birthday @user-ref)
+                         :keyboard-type :numeric
+                         :default-value (:user/birthday @user-ref)
                          :on-change-text (fn [text] (swap! user-ref assoc :user/birthday text))}]
          [rn/text-input {:placeholder "Telefono"
                          :style style
-                         :value (:user/phone @user-ref)
+                         :keyboard-type :phone-pad
+                         :default-value (:user/phone @user-ref)
                          :on-change-text (fn [text] (swap! user-ref assoc :user/phone text))}]
          [rn/view {:width "20%"}
-         [rn/button {:title "Guardar"
-                     :on-press #(dispatch [:user/upsert @user-ref])}]]]]])))
+          [rn/button {:title "Guardar"
+                      :on-press #(dispatch [:user/upsert @user-ref])}]]]]])))
 
 (defn menu-button [{:keys [text on-click]}]
   [rn/touchable-highlight {:on-press on-click}

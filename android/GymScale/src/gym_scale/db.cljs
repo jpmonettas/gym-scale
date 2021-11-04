@@ -47,6 +47,4 @@
    :scale/connected? false
    :state/current {:screen/current :logo}
    :state/prev-stack ()
-   }
-
-  )
+   })
